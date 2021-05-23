@@ -31,7 +31,7 @@ const PlayText = styled.Text`
   font-size: 24px;
   font-weight: bold;
   color: #fff;
-  padding: 14px 4px;
+  padding: 15px 4px;
   background-color: #4630eb;
 `;
 

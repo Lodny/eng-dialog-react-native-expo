@@ -217,6 +217,7 @@ function Dialog({ screenWidth, defaultCover }) {
         date={date}
         onChangeDate={onChangeDate}
         onChangeKor={onChangeKor}
+        coverGap={50}
         onChangeCover={onChangeCover}
       />
 

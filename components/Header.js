@@ -5,7 +5,6 @@ import styled from 'styled-components/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { addDays, getDateString, getDateStringWithDay } from '../Utils';
-// import { DialogContext } from '../pages/Dialog';
 import { EngDialogContext } from '../store';
 
 // styled
@@ -13,7 +12,7 @@ import { EngDialogContext } from '../store';
 const Container = styled.View`
   flex-direction: row;
   justify-content: space-between;
-  padding: 0px 0;
+  padding: 4px 0;
 `;
 const SubContainer = styled.View`
   flex-direction: row;
@@ -52,7 +51,7 @@ const ContentText = styled.Text`
 //   coverGap,
 //   onChangeCoverGap,
 // }) {
-function Header({ kor, date, onChangeDate, onChangeKor, onChangeCover }) {
+function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover }) {
   // const { kor, date } = React.useContext(EngDialogContext);
   const [showCalendar, setShowCalendar] = React.useState(false);
   console.log('Header : date = ', date);
