@@ -46,7 +46,7 @@ const Cover = styled.View`
 function Sentence({ kor, sentence, cover, idx, onPressPlay }) {
   // console.log('sentence :', sentence, idx);
   const [width, setWidth] = React.useState(0);
-  const info = React.useRef({ start: false }).current;
+  const touchInfo = React.useRef({ start: false }).current;
   // const { kor, onPressPlay } = React.useContext(DialogContext);
   // const { kor, onPressPlay } = React.useContext(EngDialogContext);
 
@@ -63,94 +63,77 @@ function Sentence({ kor, sentence, cover, idx, onPressPlay }) {
   const startTouch = (e) => {
     // if (Platform.OS == 'web') {
 
-    if (info.start === false) {
+    if (touchInfo.start === false) {
       console.log('sentence : startTouch : ', e.nativeEvent.pageX);
-      info.startX = e.nativeEvent.pageX;
-      info.start = true;
+      touchInfo.startX = e.nativeEvent.pageX;
+      touchInfo.start = true;
     }
   };
 
   const moveTouch = (e) => {
-    if (info.start && !info.move) {
-      info.move = true;
+    if (touchInfo.start && !touchInfo.move) {
+      touchInfo.move = true;
 
-      let gapX = e.nativeEvent.pageX - info.startX;
+      let gapX = e.nativeEvent.pageX - touchInfo.startX;
       if (Math.abs(gapX) > 2) {
-        console.log('sentence : moveTouch : ', e.nativeEvent.pageX, info.startX, width);
+        console.log('sentence : moveTouch : ', e.nativeEvent.pageX, touchInfo.startX, width);
 
-        info.startX = e.nativeEvent.pageX;
+        touchInfo.startX = e.nativeEvent.pageX;
         if (width + gapX < 0) setWidth(0);
         else if (width + gapX > 800) setWidth(800);
         else setWidth(width + gapX);
       }
 
-      info.move = false;
+      touchInfo.move = false;
     }
   };
 
   const endTouch = (e) => {
-    if (info.start) {
+    if (touchInfo.start) {
       console.log('sentence : endTouch : ', e.nativeEvent.pageX);
 
-      let gapX = e.nativeEvent.pageX - info.startX;
+      let gapX = e.nativeEvent.pageX - touchInfo.startX;
       setWidth(width + gapX);
     }
 
-    info.start = false;
-    info.move = false;
-    info.startX = 0;
+    touchInfo.start = false;
+    touchInfo.move = false;
+    touchInfo.startX = 0;
   };
 
   // --------------------------------------------
 
-  // const readyTouch2 = (e) => {
-  //   console.log('sentence : readyTouch2 : ', e.nativeEvent.pageX)
-  //   return true;
-  // }
+  const readyPlayTouch = (e) => {
+    console.log('Sentence : readyPlayTouch : ', e.nativeEvent.pageX);
+    return true;
+  };
 
-  // const startTouch2 = (e) => {
-  //   // if (Platform.OS == 'web') {
+  const startPlayTouch = (e) => {
+    if (touchInfo.start === false) {
+      console.log('Sentence : startPlayTouch : ', e.nativeEvent.pageX);
+      touchInfo.startX = e.nativeEvent.pageX;
+      touchInfo.start = true;
+    }
+  };
 
-  //   if (info.start === false) {
-  //     console.log('sentence : startTouch2 : ', e.nativeEvent.pageX)
-  //     info.startX = e.nativeEvent.pageX;
-  //     info.start = true;
-  //   }
-  // }
+  const endPlayTouch = (e) => {
+    if (touchInfo.start) {
+      let gapX = e.nativeEvent.pageX - touchInfo.startX;
+      console.log(`Sentence : endPlayTouch : e.nativeEvent.pageX = ${e.nativeEvent.pageX}, gapX = ${gapX}`);
 
-  // const moveTouch2 = (e) => {
-  //   if (info.start && !info.move) {
-  //     info.move = true;
+      // let loopCnt = 0;
+      // if (gapX > 30) {
+      //   loopCnt = 3;
+      // }
 
-  //     let gapX = e.nativeEvent.pageX - info.startX;
-  //     if (Math.abs(gapX) > 2) {
-  //       console.log('sentence : moveTouch : ', e.nativeEvent.pageX, info.startX, width);
+      // console.log('Sentence : endPlayTouch : gapX :', gapX);
+      onPressPlay(sentence.mp3, gapX);
+    }
 
-  //       info.startX = e.nativeEvent.pageX;
-  //       // if (width + gapX < 0)
-  //       //   setWidth(0);
-  //       // else if (width + gapX > 800)
-  //       //   setWidth(800);
-  //       // else
-  //       //   setWidth(width + gapX);
-  //     }
-
-  //     info.move = false;
-  //   }
-  // }
-
-  // const endTouch2 = (e) => {
-  //   if (info.start) {
-  //     console.log('sentence : endTouch2 : ', e.nativeEvent.pageX)
-
-  //     let gapX = e.nativeEvent.pageX - info.startX;
-  //     // setWidth(width + gapX);
-  //   }
-
-  //   info.start = false;
-  //   info.move = false;
-  //   info.startX = 0;
-  // }
+    touchInfo.start = false;
+    touchInfo.move = false;
+    touchInfo.startX = 0;
+  };
 
   // function debounce(func, ms) {
   //   let timeout;
@@ -195,11 +178,9 @@ function Sentence({ kor, sentence, cover, idx, onPressPlay }) {
       <Container
         idx={idx}
         w={width}
-        onStartShouldSetResponder={() => onPressPlay(sentence.mp3)}
-        // onStartShouldSetResponder={readyTouch2}
-        // onResponderGrant={startTouch2}
-        // onResponderMove={moveTouch2}
-        // onResponderRelease={endTouch2}
+        onStartShouldSetResponder={readyPlayTouch}
+        onResponderGrant={startPlayTouch}
+        onResponderRelease={endPlayTouch}
       >
         <EngText numberOfLines={1} ellipsizeMode={'clip'}>
           {sentence.eng}

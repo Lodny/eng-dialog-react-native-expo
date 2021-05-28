@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { View, Text } from 'react-native';
 import styled from 'styled-components/native';
+import { readyPlayTouch, startPlayTouch, endPlayTouch } from '../Utils';
 
 import EngDialogContext from '../store';
 // import { DialogContext } from '../pages/Dialog';
@@ -10,34 +11,63 @@ const Container = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  height: 60px;
 `;
 const TextContainer = styled.View`
   flex: 1;
   background-color: #93accc;
-  padding: 5px;
+  height: 100%;
+  padding: 0 5px;
 `;
 const TitleEngText = styled.Text`
   font-size: 24px;
   font-weight: bold;
   color: #fff;
-  padding: 0px 0;
 `;
 const TitleKorText = styled.Text`
   font-size: 12px;
   color: #fff;
   padding: 2px 0;
 `;
+const TextAllContainer = styled.View`
+  background-color: #4630eb;
+  justify-content: center;
+  height: 100%;
+  padding: 0 20px;
+`;
 const PlayText = styled.Text`
   font-size: 24px;
   font-weight: bold;
   color: #fff;
-  padding: 15px 4px;
-  background-color: #4630eb;
 `;
 
 function Title({ kor, title, onPressPlay }) {
-  // const { kor, onPressPlay } = React.useContext(DialogContext);
-  // const { kor, onPressPlay } = React.useContext(EngDialogContext);
+  const touchInfo = React.useRef({ start: false }).current;
+
+  const readyPlayTouch = (e) => {
+    console.log('Title : readyPlayTouch : ', e.nativeEvent.pageX);
+    return true;
+  };
+
+  const startPlayTouch = (e) => {
+    if (touchInfo.start === false) {
+      console.log('Title : startPlayTouch : ', e.nativeEvent.pageX);
+      touchInfo.startX = e.nativeEvent.pageX;
+      touchInfo.start = true;
+    }
+  };
+
+  const endPlayTouch = (e) => {
+    if (touchInfo.start) {
+      let gapX = e.nativeEvent.pageX - touchInfo.startX;
+      console.log(`Title : endPlayTouch : e.nativeEvent.pageX = ${e.nativeEvent.pageX}, gapX = ${gapX}`);
+      onPressPlay(title.allmp3, gapX);
+    }
+
+    touchInfo.start = false;
+    touchInfo.move = false;
+    touchInfo.startX = 0;
+  };
 
   return (
     <Container>
@@ -45,7 +75,13 @@ function Title({ kor, title, onPressPlay }) {
         <TitleEngText>{title.eng}</TitleEngText>
         <TitleKorText>{kor ? title.kor : ''}</TitleKorText>
       </TextContainer>
-      <PlayText onPress={() => onPressPlay(title.allmp3)}>Play All</PlayText>
+      <TextAllContainer
+        onStartShouldSetResponder={readyPlayTouch}
+        onResponderGrant={startPlayTouch}
+        onResponderRelease={endPlayTouch}
+      >
+        <PlayText>Play All</PlayText>
+      </TextAllContainer>
     </Container>
   );
 }

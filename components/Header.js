@@ -7,6 +7,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { addDays, getDateString, getDateStringWithDay } from '../Utils';
 import { EngDialogContext } from '../store';
 
+import { Dimensions } from 'react-native';
+
+const windowWidth = Dimensions.get('window').width;
+
 // styled
 // -----------------------------------------------------------------------------------
 const Container = styled.View`
@@ -40,6 +44,37 @@ const ContentText = styled.Text`
   padding: 0 10px;
 `;
 
+function useSwipe(onSwipeLeft, onSwipeRight, rangeOffset = 4) {
+  console.log(3);
+
+  let firstTouch = 0;
+
+  // set user touch start position
+  function onTouchStart(e) {
+    firstTouch = e.nativeEvent.pageX;
+    console.log('--- start');
+  }
+
+  // when touch ends check for swipe directions
+  function onTouchEnd(e) {
+    console.log('--- end');
+    // get touch position and screen size
+    const positionX = e.nativeEvent.pageX;
+    const range = windowWidth / rangeOffset;
+
+    // check if position is growing positively and has reached specified range
+    if (positionX - firstTouch > range) {
+      onSwipeRight && onSwipeRight();
+    }
+    // check if position is growing negatively and has reached specified range
+    else if (firstTouch - positionX > range) {
+      onSwipeLeft && onSwipeLeft();
+    }
+  }
+
+  return { onTouchStart, onTouchEnd };
+}
+
 // main
 // -----------------------------------------------------------------------------------
 // function Header({
@@ -55,6 +90,16 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
   // const { kor, date } = React.useContext(EngDialogContext);
   const [showCalendar, setShowCalendar] = React.useState(false);
   console.log('Header : date = ', date);
+
+  const { onTouchStart, onTouchEnd } = useSwipe(onSwipeLeft, onSwipeRight, 6);
+
+  function onSwipeLeft() {
+    console.log('SWIPE_LEFT');
+  }
+
+  function onSwipeRight() {
+    console.log('SWIPE_RIGHT');
+  }
 
   // functoin
   // -------------------------------------------------------------
@@ -91,9 +136,11 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
             />
           )}
           <ContentText
-            onPress={() => {
-              setShowCalendar(true);
-            }}
+            // onPress={() => {
+            //   setShowCalendar(true);
+            // }}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
           >
             {getDateStringWithDay(date)}
           </ContentText>
