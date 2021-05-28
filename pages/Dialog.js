@@ -152,16 +152,37 @@ function Dialog({ screenWidth, defaultCover }) {
   const [mp3, setMp3] = React.useState(null);
   const [sound, setSound] = React.useState(null);
 
-  function cbSound(snd) {
-    console.log('Dialog : cbSound() :');
-    if (!snd) {
-      setMp3(null);
+  function cbSound({ snd, didJustFinish, isLooping }) {
+    if (snd) {
+      console.log('Dialog : cbSound() : receive snd');
+      setSound(snd);
     }
-    setSound(snd);
+
+    if (didJustFinish) {
+      console.log(`Dialog : cbSound() : didJustFinish = ${didJustFinish}, isLooping = ${isLooping}`);
+      if (!isLooping) {
+        setSound(null);
+        setMp3(null);
+      }
+    }
   }
 
-  function onPressPlay(newMp3) {
-    console.log('Dialog : onPressPlay() : mp3 :', mp3, newMp3);
+  // function cbSound(snd) {
+  //   console.log('Dialog : cbSound() :');
+  //   if (!snd) {
+  //     setMp3(null);
+  //   }
+  //   setSound(snd);
+  // }
+
+  // function cbPlaySentence({ isLooping }) {
+  //   console.log(`isLooping = ${isLooping}`);
+  // }
+
+  function onPressPlay(newMp3, sweep) {
+    console.log(`Dialog : onPressPlay() : mp3 = ${mp3}, newMp3 = ${newMp3}, sweep = ${sweep}`);
+
+    // playSentence(newMp3, sweep, cbPlaySentence);
 
     if (!newMp3) return;
 
@@ -173,7 +194,7 @@ function Dialog({ screenWidth, defaultCover }) {
       return;
     }
 
-    playSentence(newMp3, cbSound);
+    playSentence(newMp3, sweep > 30, cbSound);
     setMp3(newMp3);
   }
 
@@ -233,7 +254,7 @@ function Dialog({ screenWidth, defaultCover }) {
 //  </DialogContext.Provider>
 export default Dialog;
 
-/* <Header        
+/* <Header
           onChangeDate={onChangeDate}
           onChangeKor={onChangeKor}
           onChangeCover={onChangeCover}
