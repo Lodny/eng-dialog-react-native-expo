@@ -33,8 +33,9 @@ async function getDialog(date) {
     const title = {
       eng: data.title,
       kor: data.title_translation,
-      mp3: data.pron_file_url,
-      allmp3: data.pron_file_all_url,
+      // mp3: data.pron_file_url,
+      mp3: data.pron_file_all_url,
+      // allmp3: data.pron_file_all_url,
     };
     const dialog = data.sentences.map((sentence) => {
       let eng_sentence = sentence.orgnc_sentence.replace(/(<([^>]+)>)/gi, '');
@@ -127,6 +128,10 @@ function Dialog({ screenWidth, defaultCover }) {
     if (date) {
       console.log('Dialog : useEffect : dialogs.length :', dialogs.length);
 
+      // if (currPlay) currPlay.play = false;
+
+      setSound(null);
+      setPlayIcon('');
       setCover(defaultCover);
 
       let shortDate = getDateString(date, '');
@@ -149,8 +154,9 @@ function Dialog({ screenWidth, defaultCover }) {
 
   // play mp3
   // ----------------------------------------------------------------------------------------
-  const [mp3, setMp3] = React.useState(null);
+  const [currPlay, setCurrPlay] = React.useState(null);
   const [sound, setSound] = React.useState(null);
+  const [playIcon, setPlayIcon] = React.useState('');
 
   function cbSound({ snd, didJustFinish, isLooping }) {
     if (snd) {
@@ -162,40 +168,51 @@ function Dialog({ screenWidth, defaultCover }) {
       console.log(`Dialog : cbSound() : didJustFinish = ${didJustFinish}, isLooping = ${isLooping}`);
       if (!isLooping) {
         setSound(null);
-        setMp3(null);
+        setPlayIcon('');
+        // setCurrPlay(null);
       }
     }
   }
 
-  // function cbSound(snd) {
-  //   console.log('Dialog : cbSound() :');
-  //   if (!snd) {
-  //     setMp3(null);
-  //   }
-  //   setSound(snd);
-  // }
+  function onPressPlay(newPlay) {
+    console.log(`Dialog : onPressPlay() : currPlay = ${currPlay}, newPlay = ${newPlay}`);
 
-  // function cbPlaySentence({ isLooping }) {
-  //   console.log(`isLooping = ${isLooping}`);
-  // }
+    if (!newPlay) return;
 
-  function onPressPlay(newMp3, sweep) {
-    console.log(`Dialog : onPressPlay() : mp3 = ${mp3}, newMp3 = ${newMp3}, sweep = ${sweep}`);
+    if (currPlay) currPlay.play = false;
 
-    // playSentence(newMp3, sweep, cbPlaySentence);
-
-    if (!newMp3) return;
-
-    if (mp3) stopSentence(sound);
-
-    if (mp3 === newMp3) {
-      setSound(null);
-      setMp3(null);
+    if (!sound) {
+      playSentence(newPlay.mp3, cbSound);
+      setPlayIcon('🔉');
+      newPlay.play = true;
+      setCurrPlay(newPlay);
       return;
     }
 
-    playSentence(newMp3, sweep > 30, cbSound);
-    setMp3(newMp3);
+    if (currPlay === newPlay) {
+      if (playIcon === '🔉') {
+        setPlayIcon('♾️');
+        newPlay.play = true;
+        setCurrPlay(newPlay);
+        sound.setIsLoopingAsync(true).then((res) => {});
+        return;
+      }
+
+      //if (currPlay.play === '♾️')
+      // currPlay.play = false;
+      setPlayIcon('');
+      stopSentence(sound);
+      setSound(null);
+      return;
+    }
+
+    stopSentence(sound);
+    setSound(null);
+    // currPlay.play = false;
+    setPlayIcon('🔉');
+    newPlay.play = true;
+    setCurrPlay(newPlay);
+    playSentence(newPlay.mp3, cbSound);
   }
 
   // control
@@ -242,10 +259,18 @@ function Dialog({ screenWidth, defaultCover }) {
         onChangeCover={onChangeCover}
       />
 
-      {currentDialog && <Title kor={kor} title={currentDialog.title} onPressPlay={onPressPlay} />}
+      {currentDialog && <Title kor={kor} title={currentDialog.title} onPressPlay={onPressPlay} playIcon={playIcon} />}
       {currentDialog &&
         currentDialog.dialog.map((sentence, idx) => (
-          <Sentence key={idx} kor={kor} cover={cover} sentence={sentence} idx={idx} onPressPlay={onPressPlay} />
+          <Sentence
+            key={idx}
+            kor={kor}
+            cover={cover}
+            sentence={sentence}
+            idx={idx}
+            onPressPlay={onPressPlay}
+            playIcon={playIcon}
+          />
         ))}
     </Container>
     // </EngDialogContextProvider>

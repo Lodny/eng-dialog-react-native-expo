@@ -86,18 +86,11 @@ async function downloadMp3(sentenceUrl, saveUri) {
 
 // play mp3
 // -----------------------------------------------------------------------------------
-async function playSound({ uri, isLooping }, setSound) {
+async function playSound(uri, setSound) {
   console.log('playSound() :', uri);
 
-  // function checkFinish({didJustFinish}) {
-  //   if (didJustFinish) {
-  //     console.log('playSound() : checkFinish() : ', didJustFinish);
-  //     setSound(null);
-  //   }
-  // }
-
   try {
-    const { sound } = await Audio.Sound.createAsync({ uri }, { isLooping }, setSound); //, { shouldPlay: true });
+    const { sound } = await Audio.Sound.createAsync({ uri }, {}, setSound); //, { shouldPlay: true });
     setSound({ snd: sound });
     await sound.playAsync();
   } catch (e) {
@@ -123,20 +116,20 @@ async function stopSentence(sound) {
   await sound.unloadAsync();
 }
 
-async function playSentence(sentenceUrl, isLooping, setSound) {
+async function playSentence(sentenceUrl, setSound) {
   let uri = getMp3Uri(sentenceUrl);
 
   try {
     let { exists } = await FileSystem.getInfoAsync(uri);
     if (exists) {
-      playSound({ uri, isLooping }, setSound);
+      playSound(uri, setSound);
       return;
     }
 
     console.log('playSentence() : sentenceUrl :', sentenceUrl);
     downloadMp3(sentenceUrl, uri)
       .then((res) => {
-        if (uri) playSound({ uri, isLooping }, setSound);
+        if (uri) playSound(uri, setSound);
       })
       .catch((e) => console.log(e));
     // console.log('playSound() :', fileinfo);

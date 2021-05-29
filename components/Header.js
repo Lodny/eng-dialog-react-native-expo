@@ -6,10 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { addDays, getDateString, getDateStringWithDay } from '../Utils';
 import { EngDialogContext } from '../store';
-
-import { Dimensions } from 'react-native';
-
-const windowWidth = Dimensions.get('window').width;
+import useSwipe from './useSwipe';
 
 // styled
 // -----------------------------------------------------------------------------------
@@ -22,7 +19,7 @@ const SubContainer = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 6px;
+  padding: 0 10px;
 `;
 // const SliderContainer = styled.View`
 //   align-items: center;
@@ -41,72 +38,35 @@ const OptionContainer = styled.View`
 `;
 const ContentText = styled.Text`
   font-size: 20px;
-  padding: 0 10px;
+  padding: 0 2px;
 `;
 
-function useSwipe(onSwipeLeft, onSwipeRight, rangeOffset = 4) {
-  console.log(3);
-
-  let firstTouch = 0;
-
-  // set user touch start position
-  function onTouchStart(e) {
-    firstTouch = e.nativeEvent.pageX;
-    console.log('--- start');
-  }
-
-  // when touch ends check for swipe directions
-  function onTouchEnd(e) {
-    console.log('--- end');
-    // get touch position and screen size
-    const positionX = e.nativeEvent.pageX;
-    const range = windowWidth / rangeOffset;
-
-    // check if position is growing positively and has reached specified range
-    if (positionX - firstTouch > range) {
-      onSwipeRight && onSwipeRight();
-    }
-    // check if position is growing negatively and has reached specified range
-    else if (firstTouch - positionX > range) {
-      onSwipeLeft && onSwipeLeft();
-    }
-  }
-
-  return { onTouchStart, onTouchEnd };
-}
-
-// main
+// Function
 // -----------------------------------------------------------------------------------
-// function Header({
-//   onChangeDate,
-//   onChangeKor,
-//   onChangeCover,
-//   coverInit,
-//   onChangeInitCover,
-//   coverGap,
-//   onChangeCoverGap,
-// }) {
 function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover }) {
   // const { kor, date } = React.useContext(EngDialogContext);
   const [showCalendar, setShowCalendar] = React.useState(false);
+  const { onTouchStart, onTouchEnd } = useSwipe(onSwipe);
+
   console.log('Header : date = ', date);
 
-  const { onTouchStart, onTouchEnd } = useSwipe(onSwipeLeft, onSwipeRight, 6);
+  function onSwipe(gapX) {
+    const DEFAULT_GAP = 20;
+    console.log(`Header : onSwipe(${gapX}) : DEFAULT_GAP = ${DEFAULT_GAP}`);
 
-  function onSwipeLeft() {
-    console.log('SWIPE_LEFT');
-  }
-
-  function onSwipeRight() {
-    console.log('SWIPE_RIGHT');
+    if (gapX < -DEFAULT_GAP) {
+      console.log('Header : Left Swipe');
+      onChangeDate(addDays(date, 1));
+    } else if (gapX > DEFAULT_GAP) {
+      console.log('Header : Right Swipe');
+      onChangeDate(addDays(date, -1));
+    } else {
+      setShowCalendar(true);
+    }
   }
 
   // functoin
   // -------------------------------------------------------------
-  React.useEffect(() => {
-    // getDateString(date);
-  }, []);
-
   const onChange = (event, selectedDate) => {
     console.log('Header : ', selectedDate, date, selectedDate == date);
     if (selectedDate == date) return;
@@ -124,7 +84,7 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
     <View>
       <Container>
         <SubContainer>
-          <Button title='<<' onPress={() => onChangeDate(addDays(date, -1))} />
+          {/* <Button title='<<' onPress={() => onChangeDate(addDays(date, -1))} /> */}
           {showCalendar && (
             <DateTimePicker
               testID='dateTimePicker'
@@ -135,20 +95,14 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
               onChange={onChange}
             />
           )}
-          <ContentText
-            // onPress={() => {
-            //   setShowCalendar(true);
-            // }}
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-          >
+          <ContentText onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             {getDateStringWithDay(date)}
           </ContentText>
-          <Button title='>>' onPress={() => onChangeDate(addDays(date))} />
+          {/* <Button title='>>' onPress={() => onChangeDate(addDays(date))} /> */}
         </SubContainer>
         <SubContainer>
           <Button title='<<' onPress={() => onChangeCover(-coverGap)} />
-          <ContentText>{'All'}</ContentText>
+          <ContentText>{'All Cover'}</ContentText>
           <Button title='>>' onPress={() => onChangeCover(coverGap)} />
         </SubContainer>
         <SubContainer>
@@ -160,21 +114,7 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
   );
 }
 
-// minimumTrackTintColor="#FFFFFF"
-// maximumTrackTintColor="#000000"
-// <OptionContainer>
-// </OptionContainer>
-/* <SliderContainer>
-          <SlideText>Init Cover : {coverInit}</SlideText>
-          <Slider
-            style={{ width: 200, height: 40 }}
-            minimumValue={0}
-            maximumValue={800}
-            value={coverInit}
-            step={50}
-            onValueChange={onChangeInitCover}
-          />
-        </SliderContainer>
+/*
         <SliderContainer>
           <SlideText>Cover Gap : {coverGap}</SlideText>
           <Slider
@@ -185,6 +125,7 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
             step={10}
             onValueChange={onChangeCoverGap}
           />
-        </SliderContainer> */
+        </SliderContainer> 
+*/
 
 export default Header;

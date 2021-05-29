@@ -1,10 +1,7 @@
 import * as React from 'react';
-import { TouchableWithoutFeedback, View, Text, Platform } from 'react-native';
 import styled from 'styled-components/native';
-
-// import { DialogContext } from '../pages/Dialog';
+import { View, Text } from 'react-native';
 import EngDialogContext from '../store';
-// import { playSentence } from '../Utils';
 
 // styled
 // -----------------------------------------------------------------------------------
@@ -40,31 +37,32 @@ const Cover = styled.View`
   flex: 1;
 `;
 
-// main
+// Function
 // -----------------------------------------------------------------------------------
-// function sentence({sentence, cover, idx, onChangeAllCover}) {
-function Sentence({ kor, sentence, cover, idx, onPressPlay }) {
+function Sentence({ kor, sentence, cover, idx, onPressPlay, playIcon }) {
   // console.log('sentence :', sentence, idx);
   const [width, setWidth] = React.useState(0);
-  const touchInfo = React.useRef({ start: false }).current;
-  // const { kor, onPressPlay } = React.useContext(DialogContext);
-  // const { kor, onPressPlay } = React.useContext(EngDialogContext);
 
   React.useEffect(() => {
-    console.log('sentence : useEffect : ', cover);
+    // console.log('Sentence : useEffect : ', cover);
     setWidth(cover);
   }, [cover]);
 
+  React.useEffect(() => {
+    // console.log('Sentence : useEffect() :');
+    sentence.play = false;
+  }, [sentence]);
+
+  const touchInfo = React.useRef({ start: false }).current;
+
   const readyTouch = (e) => {
-    console.log('sentence : readyTouch : ', e.nativeEvent.pageX);
+    console.log('Sentence : readyTouch : ', e.nativeEvent.pageX);
     return true;
   };
 
   const startTouch = (e) => {
-    // if (Platform.OS == 'web') {
-
     if (touchInfo.start === false) {
-      console.log('sentence : startTouch : ', e.nativeEvent.pageX);
+      console.log('Sentence : startTouch : ', e.nativeEvent.pageX);
       touchInfo.startX = e.nativeEvent.pageX;
       touchInfo.start = true;
     }
@@ -76,7 +74,7 @@ function Sentence({ kor, sentence, cover, idx, onPressPlay }) {
 
       let gapX = e.nativeEvent.pageX - touchInfo.startX;
       if (Math.abs(gapX) > 2) {
-        console.log('sentence : moveTouch : ', e.nativeEvent.pageX, touchInfo.startX, width);
+        console.log('Sentence : moveTouch : ', e.nativeEvent.pageX, touchInfo.startX, width);
 
         touchInfo.startX = e.nativeEvent.pageX;
         if (width + gapX < 0) setWidth(0);
@@ -90,7 +88,7 @@ function Sentence({ kor, sentence, cover, idx, onPressPlay }) {
 
   const endTouch = (e) => {
     if (touchInfo.start) {
-      console.log('sentence : endTouch : ', e.nativeEvent.pageX);
+      console.log('Sentence : endTouch : ', e.nativeEvent.pageX);
 
       let gapX = e.nativeEvent.pageX - touchInfo.startX;
       setWidth(width + gapX);
@@ -101,88 +99,13 @@ function Sentence({ kor, sentence, cover, idx, onPressPlay }) {
     touchInfo.startX = 0;
   };
 
+  // JSX
   // --------------------------------------------
-
-  const readyPlayTouch = (e) => {
-    console.log('Sentence : readyPlayTouch : ', e.nativeEvent.pageX);
-    return true;
-  };
-
-  const startPlayTouch = (e) => {
-    if (touchInfo.start === false) {
-      console.log('Sentence : startPlayTouch : ', e.nativeEvent.pageX);
-      touchInfo.startX = e.nativeEvent.pageX;
-      touchInfo.start = true;
-    }
-  };
-
-  const endPlayTouch = (e) => {
-    if (touchInfo.start) {
-      let gapX = e.nativeEvent.pageX - touchInfo.startX;
-      console.log(`Sentence : endPlayTouch : e.nativeEvent.pageX = ${e.nativeEvent.pageX}, gapX = ${gapX}`);
-
-      // let loopCnt = 0;
-      // if (gapX > 30) {
-      //   loopCnt = 3;
-      // }
-
-      // console.log('Sentence : endPlayTouch : gapX :', gapX);
-      onPressPlay(sentence.mp3, gapX);
-    }
-
-    touchInfo.start = false;
-    touchInfo.move = false;
-    touchInfo.startX = 0;
-  };
-
-  // function debounce(func, ms) {
-  //   let timeout;
-  //   return function() {
-  //     clearTimeout(timeout);
-  //     timeout = setTimeout(() => func.apply(this, arguments), ms);
-  //   };
-  // }
-
-  // function throttle(func, ms) {
-
-  //   let isThrottled = false,
-  //     savedArgs,
-  //     savedThis;
-
-  //   function wrapper() {
-
-  //     if (isThrottled) { // (2)
-  //       savedArgs = arguments;
-  //       savedThis = this;
-  //       return;
-  //     }
-
-  //     func.apply(this, arguments); // (1)
-
-  //     isThrottled = true;
-
-  //     setTimeout(function() {
-  //       isThrottled = false; // (3)
-  //       if (savedArgs) {
-  //         wrapper.apply(savedThis, savedArgs);
-  //         savedArgs = savedThis = null;
-  //       }
-  //     }, ms);
-  //   }
-
-  //   return wrapper;
-  // }
-
   return (
     <SlideContainer>
-      <Container
-        idx={idx}
-        w={width}
-        onStartShouldSetResponder={readyPlayTouch}
-        onResponderGrant={startPlayTouch}
-        onResponderRelease={endPlayTouch}
-      >
+      <Container idx={idx} w={width} onStartShouldSetResponder={() => onPressPlay(sentence)}>
         <EngText numberOfLines={1} ellipsizeMode={'clip'}>
+          {sentence.play ? playIcon : ''}
           {sentence.eng}
         </EngText>
         <KorText numberOfLines={1} ellipsizeMode={'clip'} kor={kor} idx={idx}>
