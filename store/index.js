@@ -1,12 +1,38 @@
 import React from 'react';
 
-export const EngDialogContext = React.createContext();
+export const DialogContext = React.createContext();
 
-const EngDialogContextProvider = (props) => {
-  const [kor, setKor] = React.useState(true);
-  const [date, setDate] = React.useState(null);
+const dialogReducer = (store, { type, payload }) => {
+  switch (type) {
+    case 'SET_DIALOGS':
+      return { ...store, dialogs: payload };
 
-  return <EngDialogContext.Provider value={{ kor, date }}>{props.children}</EngDialogContext.Provider>;
+    case 'SET_PAGE':
+      return { ...store, page: payload };
+
+    case 'SET_CURR_DATE':
+      return { ...store, currDate: payload };
+
+    default:
+      return store;
+  }
 };
 
-export default EngDialogContextProvider;
+const initData = {
+  dialogs: [],
+  kor: true,
+  page: 'dialog',
+  currDate: new Date(),
+};
+
+const DialogStore = (props) => {
+  const [store, dispatch] = React.useReducer(dialogReducer, initData);
+
+  React.useEffect(() => {
+    console.log(`store/index : `);
+  }, [store]);
+
+  return <DialogContext.Provider value={{ store, dispatch }}>{props.children}</DialogContext.Provider>;
+};
+
+export default DialogStore;

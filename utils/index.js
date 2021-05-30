@@ -1,6 +1,8 @@
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 
+Audio.setAudioModeAsync({ staysActiveInBackground: true });
+
 // function
 // -----------------------------------------------------------------------------------
 function addDays(date, days = 1) {
@@ -23,6 +25,22 @@ function getDateStringWithDay(date, seperator = '-') {
 
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   return getDateString(date) + `(${days[date.getDay()]})`;
+}
+
+function getDateStringArray(from, to) {
+  console.log(`Utils : getDateStringArray(${from}, ${to})`);
+
+  if (from > to) return;
+
+  const ret = [];
+  while (from <= to) {
+    // console.log(`Utils : ${getDateString(from)}`);
+
+    ret.push(getDateString(from));
+    from = addDays(from, 1);
+  }
+
+  return ret;
 }
 
 // download mp3
@@ -179,6 +197,8 @@ export {
   addDays,
   getDateString,
   getDateStringWithDay,
+  getDateStringArray,
+  // sound event -------------
   playSentence,
   stopSentence,
   // touch event -------------

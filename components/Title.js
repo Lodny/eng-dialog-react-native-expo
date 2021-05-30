@@ -21,6 +21,7 @@ const TitleEngText = styled.Text`
   font-size: 24px;
   font-weight: bold;
   color: #fff;
+  padding: 3px 0;
 `;
 const TitleKorText = styled.Text`
   font-size: 12px;
@@ -45,6 +46,7 @@ function Title({ kor, title, onPressPlay, playIcon }) {
   React.useEffect(() => {
     console.log('Title : useEffect() :');
     title.play = false;
+    title.mp3 = title.allmp3;
   }, [title]);
 
   return (

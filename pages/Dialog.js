@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import styled from 'styled-components/native';
-import { getDateString, playSentence, stopSentence } from '../Utils';
+import { getDateString, getDateStringArray, playSentence, stopSentence } from '../utils';
 import * as FileSystem from 'expo-file-system';
-import EngDialogContextProvider from '../store';
 
 import Header from '../components/Header';
 import Title from '../components/Title';

@@ -1,12 +1,14 @@
 import * as React from 'react';
 import { View, Text, Button, CheckBox } from 'react-native';
 import styled from 'styled-components/native';
-// import Slider from '@react-native-community/slider';
+import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-import { addDays, getDateString, getDateStringWithDay } from '../Utils';
+import { addDays, getDateString, getDateStringWithDay } from '../utils';
 import { EngDialogContext } from '../store';
 import useSwipe from './useSwipe';
+
+import PlayDialog from './PlayDialog';
 
 // styled
 // -----------------------------------------------------------------------------------
@@ -19,23 +21,23 @@ const SubContainer = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 15px;
 `;
 // const SliderContainer = styled.View`
 //   align-items: center;
 //   padding: 0 10px 0 0;
 // `;
-const SlideText = styled.Text`
-  margin: 0 0 -15px 0;
-  font-weight: bold;
-`;
-const OptionContainer = styled.View`
-  flex-direction: row;
-  width: 100%;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 5px 10px;
-`;
+// const SlideText = styled.Text`
+//   margin: 0 0 -15px 0;
+//   font-weight: bold;
+// `;
+// const OptionContainer = styled.View`
+//   flex-direction: row;
+//   width: 100%;
+//   justify-content: flex-end;
+//   align-items: center;
+//   padding: 5px 10px;
+// `;
 const ContentText = styled.Text`
   font-size: 20px;
   padding: 0 2px;
@@ -43,10 +45,14 @@ const ContentText = styled.Text`
 
 // Function
 // -----------------------------------------------------------------------------------
-function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover }) {
+function Header(props) {
+  const { kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover, onPressNightPlay } = props;
   // const { kor, date } = React.useContext(EngDialogContext);
-  const [showCalendar, setShowCalendar] = React.useState(false);
+  const [showCalendar, setShowCalendar] = React.useState(0);
   const { onTouchStart, onTouchEnd } = useSwipe(onSwipe);
+  const [calendarDate, setCalendarDate] = React.useState(new Date());
+
+  const [night, setNight] = React.useState(false);
 
   console.log('Header : date = ', date);
 
@@ -61,21 +67,25 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
       console.log('Header : Right Swipe');
       onChangeDate(addDays(date, -1));
     } else {
-      setShowCalendar(true);
+      setCalendarDate(date);
+      setShowCalendar(1);
     }
   }
 
   // functoin
   // -------------------------------------------------------------
   const onChange = (event, selectedDate) => {
-    console.log('Header : ', selectedDate, date, selectedDate == date);
+    console.log('Header : ', showCalendar, selectedDate, date, selectedDate == date);
+
     if (selectedDate == date) return;
 
-    const currentDate = selectedDate || date;
-    console.log('Header : ', getDateString(currentDate));
+    onChangeDate(selectedDate || date);
+    setShowCalendar(0);
+  };
 
-    setShowCalendar(false);
-    onChangeDate(currentDate);
+  const onChangeNight = () => {
+    console.log('Header : night :', night);
+    setNight(!night);
   };
 
   // render
@@ -85,10 +95,10 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
       <Container>
         <SubContainer>
           {/* <Button title='<<' onPress={() => onChangeDate(addDays(date, -1))} /> */}
-          {showCalendar && (
+          {showCalendar > 0 && (
             <DateTimePicker
-              testID='dateTimePicker'
-              value={date}
+              // testID='dateTimePicker'
+              value={calendarDate}
               mode='date'
               is24Hour={true}
               display='default'
@@ -100,32 +110,25 @@ function Header({ kor, date, onChangeDate, onChangeKor, coverGap, onChangeCover 
           </ContentText>
           {/* <Button title='>>' onPress={() => onChangeDate(addDays(date))} /> */}
         </SubContainer>
+
+        <SubContainer>
+          <CheckBox value={night} onValueChange={onChangeNight} />
+          <Text onPress={onChangeNight}>Night</Text>
+        </SubContainer>
+
         <SubContainer>
           <Button title='<<' onPress={() => onChangeCover(-coverGap)} />
-          <ContentText>{'All Cover'}</ContentText>
+          <ContentText>{' All Cover '}</ContentText>
           <Button title='>>' onPress={() => onChangeCover(coverGap)} />
         </SubContainer>
         <SubContainer>
           <CheckBox value={kor} onValueChange={onChangeKor} />
-          <Text onPress={onChangeKor}> Show KOR</Text>
+          <Text onPress={onChangeKor}>KOR</Text>
         </SubContainer>
       </Container>
+      {night && <PlayDialog />}
     </View>
   );
 }
-
-/*
-        <SliderContainer>
-          <SlideText>Cover Gap : {coverGap}</SlideText>
-          <Slider
-            style={{ width: 200, height: 40 }}
-            minimumValue={10}
-            maximumValue={100}
-            value={50}
-            step={10}
-            onValueChange={onChangeCoverGap}
-          />
-        </SliderContainer> 
-*/
 
 export default Header;

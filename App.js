@@ -3,13 +3,18 @@ import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import styled from 'styled-components/native';
 import Constants from 'expo-constants';
 // import * as ScreenOrientation from 'expo-screen-orientation';
+import DialogContext from './store';
 
 import Dialog from './pages/Dialog';
+import Navi from './navi/Navi';
+import Body from './page/Body';
 
 const Container = styled.View`
   flex: 1;
   margin-top: ${Constants.statusBarHeight}px;
 `;
+
+// export const DialogContext = React.createContext();
 
 export default function App() {
   console.log('App ---------------------------------------------------------');
@@ -17,19 +22,23 @@ export default function App() {
 
   // const { width, height } = Dimensions.get('window');
   // console.log(`'App : width = ${width}, height = ${height}`);
-
   const width = Number.parseInt(useWindowDimensions().width / 100) * 100;
-
   console.log('App : width :', useWindowDimensions().width, width);
 
-  //async function changeScreenOrientation() {
-  // await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
-  //}
+  // async function changeScreenOrientation() {
+  // app.json : "orientation": "portrait",
+  // await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+  // }
   // changeScreenOrientation();
 
   return (
     <Container>
-      <Dialog screenWidth={width} defaultCover={200} />
+      <DialogContext>
+        <Navi />
+        <Body />
+        {/* <Dialog screenWidth={width} defaultCover={200} /> */}
+        {/* <Footer /> */}
+      </DialogContext>
     </Container>
   );
 }
