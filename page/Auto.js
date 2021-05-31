@@ -6,14 +6,18 @@ import Slider from '@react-native-community/slider';
 import * as FileSystem from 'expo-file-system';
 
 import { DialogContext } from '../store';
-import { getDateString, addDays, getDateStringArray } from '../utils';
+import { getDateString, addDays, getDateStringArray, playSentence, stopSentence } from '../utils';
 import AutoDialog from '../components/AutoDialog';
+import NaviAuto from '../navi/NaviAuto';
 
 // styled
 // ---------------------------------------------------------------------------------
 const Container = styled.View`
   ${'' /* background-color: #f0f0f0; */}
   ${'' /* padding: 5px 0 0 0; */}
+`;
+const ControlContainer = styled.View`
+  background-color: #eee;
 `;
 const RowContainer = styled.View`
   flex-direction: row;
@@ -50,6 +54,9 @@ function Auto() {
   const [date, setDate] = React.useState(null);
   const [dialog, setDialog] = React.useState(null);
 
+  const [sound, setSound] = React.useState(null);
+  const [loop, setLoop] = React.useState(0);
+
   React.useEffect(() => {
     console.log(`Auto : useEffect([dateArray]) : `, dateArray);
     if (dateArray) {
@@ -61,12 +68,43 @@ function Auto() {
     console.log(`Auto : useEffect([date]) : `, date);
     if (date) {
       const dlg = store.dialogs.find((dlg) => dlg?.date === date);
-      console.log(dlg);
+      console.log(`Auto : useEffect([date]) : dlg?.date = ${dlg?.date}, repeat = ${repeat}`);
+      setDialog(dlg);
+
+      setLoop(repeat);
+      playSentence(dlg.title.mp3, cbSound);
+      // playSentence(dlg.dialog[0].mp3, cbSound);
     }
   }, [date]);
 
   // event handler
   // ---------------------------------------------------------------------------------
+  function cbSound({ snd, didJustFinish, isLooping }) {
+    if (snd) {
+      console.log('Dialog : cbSound() : receive snd');
+      setSound(snd);
+      snd.setIsLoopingAsync(true).then(() => {});
+    }
+
+    if (didJustFinish) {
+      console.log(
+        `Dialog : cbSound() : sound===null(${
+          sound === null
+        }), didJustFinish = ${didJustFinish}, isLooping = ${isLooping}, loop = ${loop}`
+      );
+      if (loop <= 1) {
+        sound.setIsLoopingAsync(true).then(() => {});
+        // await sound.stopAsync();
+        // await sound.unloadAsync();
+        // setSound(null);
+      } else {
+        // await sound.playAsync();
+        console.log('call setLoop');
+        setLoop(loop - 1);
+      }
+    }
+  }
+
   const onPressPrevNext = (date, add) => {
     const newDate = addDays(date, add);
     if (date === from) setFrom(newDate);
@@ -95,59 +133,62 @@ function Auto() {
 
   // const onPressPlay = async () => {
   const onPressPlay = () => {
-    console.log(`${getDateString(from, '')} ~ ${getDateString(to, '')}, repeat = ${repeat}`);
+    console.log(`${getDateString(from, '')} ~ ${getDateString(to, '')}, repeat = ${repeat}, null = ${sound === null}`);
+
+    if (sound) {
+      sound.stopAsync().then(() => {});
+      setSound(null);
+      // await sound.unloadAsync();
+      return;
+    }
+
+    if (from > to) return;
 
     const dateArray = getDateStringArray(from, to, '', [0]);
     setDateArray(dateArray);
     // const uriArray = dateArray.map((date) => `${FileSystem.documentDirectory}${date}/${date}_all.mp3`);
-    // console.log(dateArray);
-    // console.log(uriArray);
-
-    // const uriArrayExisting = await uriArray.filter(async (uri) => {
-    //   const { exists } = await FileSystem.getInfoAsync(uri);
-    //   console.log(`exists=${exists} : ${uri}`);
-    //   return exists;
-    // });
-
-    // console.log(uriArray);
-    // console.log(uriArrayExisting);
   };
 
   // JSX
   // ---------------------------------------------------------------------------------
   return (
     <Container>
-      <RowContainer>
-        {show && <DateTimePicker value={curr} mode='date' is24Hour={true} display='default' onChange={onChangeDate} />}
+      <NaviAuto />
+      <ControlContainer>
         <RowContainer>
-          <Button onPress={() => onPressPrevNext(from, -1)} title='<<<' />
-          <DateText onPress={() => onPressDate(from)}>{getDateString(from)}</DateText>
-          <Button onPress={() => onPressPrevNext(from, +1)} title='>>>' />
+          {show && (
+            <DateTimePicker value={curr} mode='date' is24Hour={true} display='default' onChange={onChangeDate} />
+          )}
+          <RowContainer>
+            <Button onPress={() => onPressPrevNext(from, -1)} title='<<<' />
+            <DateText onPress={() => onPressDate(from)}>{getDateString(from)}</DateText>
+            <Button onPress={() => onPressPrevNext(from, +1)} title='>>>' />
+          </RowContainer>
+          <Text>{'~'}</Text>
+          <RowContainer>
+            <Button onPress={() => onPressPrevNext(to, -1)} title='<<<' />
+            <DateText onPress={() => onPressDate(to)}>{getDateString(to)}</DateText>
+            <Button onPress={() => onPressPrevNext(to, +1)} title='>>>' />
+          </RowContainer>
         </RowContainer>
-        <Text>{'~'}</Text>
-        <RowContainer>
-          <Button onPress={() => onPressPrevNext(to, -1)} title='<<<' />
-          <DateText onPress={() => onPressDate(to)}>{getDateString(to)}</DateText>
-          <Button onPress={() => onPressPrevNext(to, +1)} title='>>>' />
+        <RowContainer style={{ justifyContent: 'center' }}>
+          <SliderContainer>
+            <SlideText>Repeat : {repeat}</SlideText>
+            <Slider
+              style={{ width: 200, height: 40 }}
+              minimumValue={1}
+              maximumValue={10}
+              value={repeat}
+              step={1}
+              onValueChange={onChangeRepeat}
+            />
+          </SliderContainer>
         </RowContainer>
-      </RowContainer>
-      <RowContainer style={{ justifyContent: 'center' }}>
-        <SliderContainer>
-          <SlideText>Repeat : {repeat}</SlideText>
-          <Slider
-            style={{ width: 200, height: 40 }}
-            minimumValue={1}
-            maximumValue={10}
-            value={repeat}
-            step={1}
-            onValueChange={onChangeRepeat}
-          />
-        </SliderContainer>
-      </RowContainer>
-      <RowContainer style={{ justifyContent: 'center' }}>
-        <Button onPress={onPressPlay} title='Play automaitically' />
-      </RowContainer>
-      <AutoDialog />
+        <RowContainer style={{ justifyContent: 'center' }}>
+          <Button onPress={onPressPlay} title='Play automaitically' />
+        </RowContainer>
+      </ControlContainer>
+      <AutoDialog dialog={dialog} />
     </Container>
   );
 }

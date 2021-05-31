@@ -5,7 +5,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as FileSystem from 'expo-file-system';
 
 import { DialogContext } from '../store';
-import { getDateString, addDays } from '../utils';
+import { getDateString, getDateStringWithDay, addDays } from '../utils';
 
 // styled
 // ---------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ const RowContainer = styled.View`
 const DateText = styled.Text`
   font-size: 18px;
   ${'' /* font-weight: bold; */}
-  padding: 0 40px;
+  padding: 0 30px;
 `;
 // const DateButton = styled.Button`
 //   padding: 0 20px;
@@ -34,7 +34,7 @@ const DateText = styled.Text`
 // function
 // ---------------------------------------------------------------------------------
 async function getDialog(date) {
-  console.log(`NaviDialog : getDialg : date=${date}`);
+  console.log(`NaviDialog : getDialog : date=${date}`);
 
   const url = `https://gateway.dict.naver.com/endict/kr/enko/today/${date}/conversation.dict`;
   try {
@@ -42,7 +42,7 @@ async function getDialog(date) {
     const data = (await res.json()).data;
 
     if (data === null) {
-      console.log('getDialog() : there is no data');
+      console.log('NaviDialog : getDialog : there is no data');
       return null;
     }
 
@@ -62,8 +62,8 @@ async function getDialog(date) {
 
     let uri = FileSystem.documentDirectory + date;
     let fileinfo = await FileSystem.getInfoAsync(uri);
-    console.log('getDialg() : uri :', uri);
-    console.log('getDialg() : fileinfo :', fileinfo);
+    console.log('NaviDialog : getDialog() : uri :', uri);
+    console.log('NaviDialog : getDialog() : fileinfo :', fileinfo);
 
     if (!fileinfo.exists) {
       await FileSystem.makeDirectoryAsync(uri);
@@ -71,8 +71,8 @@ async function getDialog(date) {
 
     uri += `/${date}.dlg`;
     fileinfo = await FileSystem.getInfoAsync(uri);
-    console.log('getDialg() : uri :', uri);
-    console.log('getDialg() : fileinfo :', fileinfo);
+    console.log('NaviDialog : getDialog() : uri :', uri);
+    console.log('NaviDialog : getDialog() : fileinfo :', fileinfo);
     if (!fileinfo.exists) {
       await FileSystem.writeAsStringAsync(uri, JSON.stringify({ date, title, dialog }));
     }
@@ -100,7 +100,7 @@ function NaviDialog() {
     const shortDate = getDateString(curr, '');
 
     const dlg = store.dialogs.find((dlg) => dlg?.date === shortDate);
-    console.log(`NaviDialog : curr=${shortDate}, dlg = `, dlg);
+    console.log(`NaviDialog : curr=${shortDate}, dlg.date = `, dlg?.date);
 
     if (!dlg) {
       getDialog(shortDate).then((newDialog) => {
@@ -118,6 +118,7 @@ function NaviDialog() {
   // ---------------------------------------------------------------------------------
   const onPressPrev = () => {
     const newDate = addDays(curr, -1);
+    // if (newDate.getDay() === 0)
     setCurr(newDate);
     // dispatch({ type: 'SET_CURR_DATE', payload: newDate });
   };
@@ -156,7 +157,7 @@ function NaviDialog() {
       {show && <DateTimePicker value={curr} mode='date' is24Hour={true} display='default' onChange={onChangeDate} />}
       <RowContainer>
         <Button onPress={onPressPrev} title='<<<' />
-        <DateText onPress={onPressDate}>{getDateString(curr)}</DateText>
+        <DateText onPress={onPressDate}>{getDateStringWithDay(curr)}</DateText>
         <Button onPress={onPressNext} title='>>>' />
       </RowContainer>
       <RowContainer>

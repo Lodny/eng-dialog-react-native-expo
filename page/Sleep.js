@@ -6,6 +6,7 @@ import Slider from '@react-native-community/slider';
 import * as FileSystem from 'expo-file-system';
 
 import { getDateString, addDays, getDateStringArray } from '../utils';
+import NaviSleep from '../navi/NaviSleep'
 
 // styled
 // ---------------------------------------------------------------------------------
@@ -105,6 +106,7 @@ function Sleep() {
   // ---------------------------------------------------------------------------------
   return (
     <Container>
+      <NaviSleep />
       <RowContainer>
         {show && <DateTimePicker value={curr} mode='date' is24Hour={true} display='default' onChange={onChangeDate} />}
         <RowContainer>

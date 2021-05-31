@@ -61,15 +61,12 @@ function Body() {
     console.log('Body : useEffect([]) :');
 
     getFolderInfoes().then((folderInfoes) => {
-      console.log('Body : folderInfoes :', folderInfoes);
+      // console.log('Body : folderInfoes :', folderInfoes);
       let filePromises = folderInfoes.map((folderInfo) => readDialogFile(folderInfo));
       Promise.all(filePromises).then((files) => {
         console.log('Body : useEffect([]) : dialog files :', files.length);
         if (files.length > 0)
-          dispatch(
-            'SET_DIALOGS',
-            files.filter((file) => file).map((file) => JSON.parse(file))
-          );
+          dispatch({type: 'SET_DIALOGS', payload : files.filter((file) => file).map((file) => JSON.parse(file))});
         // setDate(new Date());
         // setDate(new Date(2021,4,17));
       });
