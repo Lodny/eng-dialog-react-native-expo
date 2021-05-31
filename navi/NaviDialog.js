@@ -97,11 +97,13 @@ function NaviDialog() {
       return;
     }
 
-    const dlg = store.dialogs.find((dlg) => dlg?.date === curr);
-    console.log(`NaviDialog : curr=${getDateString(curr)}, dlg = `, dlg);
+    const shortDate = getDateString(curr, '');
+
+    const dlg = store.dialogs.find((dlg) => dlg?.date === shortDate);
+    console.log(`NaviDialog : curr=${shortDate}, dlg = `, dlg);
 
     if (!dlg) {
-      getDialog(getDateString(curr, '')).then((newDialog) => {
+      getDialog(shortDate).then((newDialog) => {
         console.log('NaviDialog : useEffect([curr]) : newDialog === null :', newDialog === null);
         // setCurrentDialog(newDialog);
         if (newDialog !== null) {
