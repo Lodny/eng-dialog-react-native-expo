@@ -27,16 +27,21 @@ function getDateStringWithDay(date, seperator = '-') {
   return getDateString(date) + `(${days[date.getDay()]})`;
 }
 
-function getDateStringArray(from, to) {
-  console.log(`Utils : getDateStringArray(${from}, ${to})`);
+// param : except : 제외 요일(getDay())
+function getDateStringArray(from, to, seperator = '-', except = []) {
+  console.log(`Utils : getDateStringArray(${from}, ${to}), except=${except}`);
+
+  console.log(except.includes(0));
 
   if (from > to) return;
 
   const ret = [];
   while (from <= to) {
-    // console.log(`Utils : ${getDateString(from)}`);
+    console.log(`Utils : ${getDateString(from, seperator)}, getDay() = ${from.getDay()}`);
 
-    ret.push(getDateString(from));
+    // 제외 요일
+    if (!except.includes(from.getDay())) ret.push(getDateString(from, seperator));
+
     from = addDays(from, 1);
   }
 

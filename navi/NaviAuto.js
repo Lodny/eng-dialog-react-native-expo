@@ -25,7 +25,7 @@ const NaviButton = styled.Button`
   color: red;
 `;
 
-function NaviSleep() {
+function NaviAuto() {
   const { store, dispatch } = React.useContext(DialogContext);
 
   const onPressDialogMode = () => {
@@ -37,11 +37,11 @@ function NaviSleep() {
       <RowContainer>
         <NaviButton onPress={onPressDialogMode} title='< Back' />
         <TitleContainer>
-          <DateText>Sleep Mode</DateText>
+          <DateText>Auto Mode</DateText>
         </TitleContainer>
       </RowContainer>
     </Container>
   );
 }
 
-export default NaviSleep;
+export default NaviAuto;

@@ -15,89 +15,6 @@ const Container = styled.View`
   flex: 1;
 `;
 
-async function getDialog(date) {
-  console.log('[F] getDialg()');
-
-  const url = `https://gateway.dict.naver.com/endict/kr/enko/today/${date}/conversation.dict`;
-  try {
-    const res = await fetch(url);
-    const data = (await res.json()).data;
-
-    if (data === null) {
-      console.log('getDialog() : there is no data');
-      return null;
-    }
-
-    // public_date: '20210521',
-    const title = {
-      eng: data.title,
-      kor: data.title_translation,
-      // mp3: data.pron_file_url,
-      mp3: data.pron_file_all_url,
-      // allmp3: data.pron_file_all_url,
-    };
-    const dialog = data.sentences.map((sentence) => {
-      let eng_sentence = sentence.orgnc_sentence.replace(/(<([^>]+)>)/gi, '');
-      return { eng: eng_sentence, kor: sentence.trsl_sentence, mp3: sentence.sentence_pron_file };
-      // return { eng: sentence.orgnc_sentence, kor: sentence.trsl_sentence, mp3: sentence.sentence_pron_file };
-    });
-
-    let uri = FileSystem.documentDirectory + date;
-    let fileinfo = await FileSystem.getInfoAsync(uri);
-    console.log('getDialg() : uri :', uri);
-    console.log('getDialg() : fileinfo :', fileinfo);
-
-    if (!fileinfo.exists) {
-      await FileSystem.makeDirectoryAsync(uri);
-    }
-
-    uri += `/${date}.dlg`;
-    fileinfo = await FileSystem.getInfoAsync(uri);
-    console.log('getDialg() : uri :', uri);
-    console.log('getDialg() : fileinfo :', fileinfo);
-    if (!fileinfo.exists) {
-      await FileSystem.writeAsStringAsync(uri, JSON.stringify({ date, title, dialog }));
-    }
-
-    return { date, title, dialog };
-  } catch (e) {
-    console.log('[E] getDialog() :', e);
-  }
-}
-
-async function readDialogFile(folderInfo) {
-  let content = null;
-  let folderName = folderInfo.uri.slice(folderInfo.uri.lastIndexOf('/') + 1);
-
-  let uri = `${folderInfo.uri}/${folderName}.dlg`;
-  folderInfo = await FileSystem.getInfoAsync(uri);
-  if (folderInfo.exists && !folderInfo.isDirectory) {
-    // console.log('readDialogFile() : ', folderInfo);
-    content = await FileSystem.readAsStringAsync(uri);
-  }
-
-  return content;
-}
-
-async function getFolderInfoes() {
-  console.log('[F] Dialog : getFolderInfoes() :');
-
-  let folderInfoes = [];
-  try {
-    const fileUris = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
-    console.log('getFolderInfoes() : fileUris :', fileUris);
-
-    let fileinfoPromises = fileUris.map((file) => FileSystem.getInfoAsync(FileSystem.documentDirectory + file));
-    let fileinfos = await Promise.all(fileinfoPromises);
-
-    folderInfoes = fileinfos.filter((fileinfo) => fileinfo.isDirectory);
-  } catch (e) {
-    console.log('[E] getFolderInfoes() :', e);
-  }
-
-  return folderInfoes;
-}
-
 function Dialog({ screenWidth, defaultCover }) {
   console.log('[MF] Dialog : screenWidth :', screenWidth);
   const [kor, setKor] = React.useState(true);
@@ -107,21 +24,6 @@ function Dialog({ screenWidth, defaultCover }) {
   const [dialogs, setDialogs] = React.useState([]);
   const [currentDialog, setCurrentDialog] = React.useState(null);
   const [date, setDate] = React.useState(null);
-
-  React.useEffect(() => {
-    console.log('Dialog : useEffect : init');
-
-    getFolderInfoes().then((folderInfoes) => {
-      // console.log('Dialog : folderInfoes :', folderInfoes);
-      let filePromises = folderInfoes.map((folderInfo) => readDialogFile(folderInfo));
-      Promise.all(filePromises).then((files) => {
-        console.log('Dialog : useEffect : files.length :', files.length);
-        setDialogs(files.filter((file) => file).map((file) => JSON.parse(file)));
-        setDate(new Date());
-        // setDate(new Date(2021,4,17));
-      });
-    });
-  }, []);
 
   React.useEffect(() => {
     if (date) {

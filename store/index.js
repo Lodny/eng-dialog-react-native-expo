@@ -7,13 +7,17 @@ const dialogReducer = (store, { type, payload }) => {
     case 'SET_DIALOGS':
       return { ...store, dialogs: payload };
 
+    case 'ADD_DIALOG':
+      return { ...store, dialogs: [...dialogs, payload] };
+
     case 'SET_PAGE':
       return { ...store, page: payload };
 
-    case 'SET_CURR_DATE':
-      return { ...store, currDate: payload };
+    // case 'SET_CURR_DATE':
+    //   return { ...store, currDate: payload };
 
     default:
+      console.log(`dialogReducer : default :`, type);
       return store;
   }
 };

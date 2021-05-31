@@ -5,7 +5,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Slider from '@react-native-community/slider';
 import * as FileSystem from 'expo-file-system';
 
+import { DialogContext } from '../store';
 import { getDateString, addDays, getDateStringArray } from '../utils';
+import AutoDialog from '../components/AutoDialog';
 
 // styled
 // ---------------------------------------------------------------------------------
@@ -34,25 +36,34 @@ const SlideText = styled.Text`
 
 // main
 // ---------------------------------------------------------------------------------
-function Sleep() {
+function Auto() {
+  const { store } = React.useContext(DialogContext);
+
   const [from, setFrom] = React.useState(new Date());
   const [to, setTo] = React.useState(new Date());
   const [curr, setCurr] = React.useState(null);
 
-  // const [dialog, setDialog] = React.useState(null);
-  // const [times, setTimes] = React.useState(playTimes);
-  // const [repeat, setRepeat] = React.useState(playTimes);
-
-  // React.useEffect(() => {
-  //   console.log(`usePlayDialog : useEffect([playDate]) : `);
-  // }, [playDate]);
-
-  // React.useEffect(() => {
-  //   console.log(`usePlayDialog : useEffect([dialog]) : `);
-  // }, [dialog]);
   const [show, setShow] = React.useState(false);
-
   const [repeat, setRepeat] = React.useState(5);
+
+  const [dateArray, setDateArray] = React.useState(null);
+  const [date, setDate] = React.useState(null);
+  const [dialog, setDialog] = React.useState(null);
+
+  React.useEffect(() => {
+    console.log(`Auto : useEffect([dateArray]) : `, dateArray);
+    if (dateArray) {
+      setDate(dateArray[0]);
+    }
+  }, [dateArray]);
+
+  React.useEffect(() => {
+    console.log(`Auto : useEffect([date]) : `, date);
+    if (date) {
+      const dlg = store.dialogs.find((dlg) => dlg?.date === date);
+      console.log(dlg);
+    }
+  }, [date]);
 
   // event handler
   // ---------------------------------------------------------------------------------
@@ -78,7 +89,7 @@ function Sleep() {
   };
 
   const onChangeRepeat = (value) => {
-    console.log(`Sleep : onChangeRepeat : value = ${value}`);
+    console.log(`Auto : onChangeRepeat : value = ${value}`);
     setRepeat(value);
   };
 
@@ -87,8 +98,10 @@ function Sleep() {
     console.log(`${getDateString(from, '')} ~ ${getDateString(to, '')}, repeat = ${repeat}`);
 
     const dateArray = getDateStringArray(from, to, '', [0]);
-    const uriArray = dateArray.map((date) => `${FileSystem.documentDirectory}${date}/${date}_all.mp3`);
-    console.log(uriArray);
+    setDateArray(dateArray);
+    // const uriArray = dateArray.map((date) => `${FileSystem.documentDirectory}${date}/${date}_all.mp3`);
+    // console.log(dateArray);
+    // console.log(uriArray);
 
     // const uriArrayExisting = await uriArray.filter(async (uri) => {
     //   const { exists } = await FileSystem.getInfoAsync(uri);
@@ -96,7 +109,6 @@ function Sleep() {
     //   return exists;
     // });
 
-    // console.log(dateArray);
     // console.log(uriArray);
     // console.log(uriArrayExisting);
   };
@@ -133,10 +145,11 @@ function Sleep() {
         </SliderContainer>
       </RowContainer>
       <RowContainer style={{ justifyContent: 'center' }}>
-        <Button onPress={onPressPlay} title='Play in sleeping' />
+        <Button onPress={onPressPlay} title='Play automaitically' />
       </RowContainer>
+      <AutoDialog />
     </Container>
   );
 }
 
-export default Sleep;
+export default Auto;

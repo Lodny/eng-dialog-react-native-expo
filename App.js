@@ -3,8 +3,8 @@ import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import styled from 'styled-components/native';
 import Constants from 'expo-constants';
 // import * as ScreenOrientation from 'expo-screen-orientation';
-import DialogContext from './store';
 
+import DialogStore from './store';
 import Dialog from './pages/Dialog';
 import Navi from './navi/Navi';
 import Body from './page/Body';
@@ -14,10 +14,10 @@ const Container = styled.View`
   margin-top: ${Constants.statusBarHeight}px;
 `;
 
-// export const DialogContext = React.createContext();
-
 export default function App() {
-  console.log('App ---------------------------------------------------------');
+  console.log(
+    'App ================================================================================================================================================'
+  );
   console.log('App : statusBarHeight :', Constants.statusBarHeight);
 
   // const { width, height } = Dimensions.get('window');
@@ -33,12 +33,12 @@ export default function App() {
 
   return (
     <Container>
-      <DialogContext>
-        <Navi />
+      <DialogStore>
+        {/* <Navi /> */}
         <Body />
         {/* <Dialog screenWidth={width} defaultCover={200} /> */}
         {/* <Footer /> */}
-      </DialogContext>
+      </DialogStore>
     </Container>
   );
 }
