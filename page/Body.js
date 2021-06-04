@@ -9,8 +9,10 @@ import Sleep from './Sleep';
 
 // styled
 // ---------------------------------------------------------------------------------
+// const Container = styled.ScrollView`
 const Container = styled.View`
   background-color: #fff;
+  flex: 1;
 `;
 
 // function
@@ -48,6 +50,13 @@ async function getFolderInfoes() {
   return folderInfoes;
 }
 
+async function deleteAllData() {
+  const uris = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
+  console.log(`> Body : delete all data : uris : `, uris);
+
+  await Promise.all(uris.map((uri) => FileSystem.deleteAsync(FileSystem.documentDirectory + uri)));
+}
+
 // main
 // ---------------------------------------------------------------------------------
 function Body() {
@@ -60,13 +69,15 @@ function Body() {
   React.useEffect(() => {
     console.log('Body : useEffect([]) :');
 
+    // deleteAllData();
+
     getFolderInfoes().then((folderInfoes) => {
       // console.log('Body : folderInfoes :', folderInfoes);
       let filePromises = folderInfoes.map((folderInfo) => readDialogFile(folderInfo));
       Promise.all(filePromises).then((files) => {
         console.log('Body : useEffect([]) : dialog files :', files.length);
         if (files.length > 0)
-          dispatch({type: 'SET_DIALOGS', payload : files.filter((file) => file).map((file) => JSON.parse(file))});
+          dispatch({ type: 'SET_DIALOGS', payload: files.filter((file) => file).map((file) => JSON.parse(file)) });
         // setDate(new Date());
         // setDate(new Date(2021,4,17));
       });

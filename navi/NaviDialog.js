@@ -59,6 +59,9 @@ async function getDialog(date) {
       return { eng: eng_sentence, kor: sentence.trsl_sentence, mp3: sentence.sentence_pron_file };
       // return { eng: sentence.orgnc_sentence, kor: sentence.trsl_sentence, mp3: sentence.sentence_pron_file };
     });
+    const entrys = data.entrys.map((entry) => {
+      return { name: entry.orgnc_entry_name, mean: entry.mean, extra: entry.extra_description };
+    });
 
     let uri = FileSystem.documentDirectory + date;
     let fileinfo = await FileSystem.getInfoAsync(uri);
@@ -74,10 +77,10 @@ async function getDialog(date) {
     console.log('NaviDialog : getDialog() : uri :', uri);
     console.log('NaviDialog : getDialog() : fileinfo :', fileinfo);
     if (!fileinfo.exists) {
-      await FileSystem.writeAsStringAsync(uri, JSON.stringify({ date, title, dialog }));
+      await FileSystem.writeAsStringAsync(uri, JSON.stringify({ date, title, dialog, entrys }));
     }
 
-    return { date, title, dialog };
+    return { date, title, dialog, entrys };
   } catch (e) {
     console.log('[E] getDialog() :', e);
   }
@@ -85,7 +88,7 @@ async function getDialog(date) {
 
 // main
 // ---------------------------------------------------------------------------------
-function NaviDialog() {
+function NaviDialog({ onChangeDialog }) {
   const { store, dispatch } = React.useContext(DialogContext);
   // const { curr } = store;
   const [curr, setCurr] = React.useState(new Date());
@@ -94,24 +97,27 @@ function NaviDialog() {
   React.useEffect(() => {
     if (curr.getDay() === 0) {
       console.log(`NaviDialog : Sunday`);
+      onChangeDialog(null);
       return;
     }
 
     const shortDate = getDateString(curr, '');
-
     const dlg = store.dialogs.find((dlg) => dlg?.date === shortDate);
     console.log(`NaviDialog : curr=${shortDate}, dlg.date = `, dlg?.date);
 
-    if (!dlg) {
-      getDialog(shortDate).then((newDialog) => {
-        console.log('NaviDialog : useEffect([curr]) : newDialog === null :', newDialog === null);
-        // setCurrentDialog(newDialog);
-        if (newDialog !== null) {
-          // setDialogs([...dialogs, newDialog]);
-          dispatch('ADD_DIALOG', newDialog);
-        }
-      });
+    if (dlg) {
+      onChangeDialog(dlg);
+      return;
     }
+
+    // dlg === null
+    getDialog(shortDate).then((newDialog) => {
+      console.log(`NaviDialog : useEffect([curr]) : newDialogl = ${newDialog !== null}`);
+      if (newDialog !== null) {
+        dispatch('ADD_DIALOG', newDialog);
+        onChangeDialog(newDialog);
+      }
+    });
   }, [curr]);
 
   // event handler

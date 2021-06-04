@@ -9,6 +9,7 @@ const SlideContainer = styled.View`
   flex-direction: row;
   width: 200%;
   justify-content: space-between;
+  height: 51px;
 `;
 const Container = styled.View`
   padding: 0 2px;

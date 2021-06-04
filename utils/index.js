@@ -162,6 +162,29 @@ async function playSentence(sentenceUrl, setSound) {
   }
 }
 
+async function createSound(url, cb, net = false) {
+  if (!url) return;
+
+  let uri = getMp3Uri(url);
+  try {
+    const exists = await FileSystem.getInfoAsync(uri).exists;
+    if (!exists && net) await downloadMp3(url, uri);
+    else return;
+
+    const sound = await Audio.Sound.createAsync({ uri }, {}, cb).sound;
+    if (sound) {
+      await sound.playAsync();
+      return sound;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+
+  console.log('Util : createSound() : no sound');
+
+  return null;
+}
+
 // Touch Event
 // ------------------------------------------------------------------------------
 // const touchInfo = { start: false };
@@ -210,4 +233,5 @@ export {
   // readyPlayTouch,
   // startPlayTouch,
   // endPlayTouch,
+  createSound,
 };

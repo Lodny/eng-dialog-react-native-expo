@@ -6,7 +6,7 @@ import Slider from '@react-native-community/slider';
 import * as FileSystem from 'expo-file-system';
 
 import { DialogContext } from '../store';
-import { getDateString, addDays, getDateStringArray, playSentence, stopSentence } from '../utils';
+import { getDateString, addDays, getDateStringArray, playSentence, stopSentence, createSound } from '../utils';
 import AutoDialog from '../components/AutoDialog';
 import NaviAuto from '../navi/NaviAuto';
 
@@ -68,41 +68,86 @@ function Auto() {
     console.log(`Auto : useEffect([date]) : `, date);
     if (date) {
       const dlg = store.dialogs.find((dlg) => dlg?.date === date);
-      console.log(`Auto : useEffect([date]) : dlg?.date = ${dlg?.date}, repeat = ${repeat}`);
-      setDialog(dlg);
+      // console.log(`Auto : useEffect([date]) : dlg?.date = ${dlg?.date}, repeat = ${repeat}`);
+      if (dlg) {
+        setDialog(dlg);
+        // setSound(createSound(dlg.title.mp3, onPlaybackStatusUpdate, true));
+        setSound(createSound(dlg.dialog[2].mp3, onPlaybackStatusUpdate, true));
+        setLoop(repeat);
+        console.log(`Auto : useEffect([date]) : dlg?.date = ${dlg?.date}, repeat = ${repeat}`);
+      }
 
-      setLoop(repeat);
-      playSentence(dlg.title.mp3, cbSound);
+      // playSentence(dlg.title.mp3, cbSound);
       // playSentence(dlg.dialog[0].mp3, cbSound);
     }
   }, [date]);
 
+  React.useEffect(() => {
+    if (sound) {
+      console.log(`Auto : useEffect([sound]) : sound=${sound != null}`);
+    }
+  }, [sound]);
+
   // event handler
   // ---------------------------------------------------------------------------------
-  function cbSound({ snd, didJustFinish, isLooping }) {
-    if (snd) {
-      console.log('Dialog : cbSound() : receive snd');
-      setSound(snd);
-      snd.setIsLoopingAsync(true).then(() => {});
+  // _onPlaybackStatusUpdate = status => {
+  //   if (status.isLoaded) {
+  //     this.setState({
+  //       playbackInstancePosition: status.positionMillis,
+  //       playbackInstanceDuration: status.durationMillis,
+  //       shouldPlay: status.shouldPlay,
+  //       isPlaying: status.isPlaying,
+  //       isBuffering: status.isBuffering,
+  //       rate: status.rate,
+  //       muted: status.isMuted,
+  //       volume: status.volume,
+  //       loopingType: status.isLooping ? LOOPING_TYPE_ONE : LOOPING_TYPE_ALL,
+  //       shouldCorrectPitch: status.shouldCorrectPitch
+  //     });
+  //     if (status.didJustFinish && !status.isLooping) {
+  //       this._advanceIndex(true);
+  //       this._updatePlaybackInstanceForIndex(true);
+  //     }
+  //   } else {
+  //     if (status.error) {
+  //       console.log(`FATAL PLAYER ERROR: ${status.error}`);
+  //     }
+  //   }
+  // };
+
+  function onPlaybackStatusUpdate({ isLoaded, isPlaying, didJustFinish, isLooping, error }) {
+    console.log(
+      `Auto : onPlaybackStatusUpdate : isLoaded=${isLoaded}, isPlaying=${isPlaying}, didJustFinish=${didJustFinish}, isLooping=${isLooping}`
+    );
+
+    if (isLoaded && !isPlaying) {
+      console.log(`Auto : isLoaded=${isLoaded}, isPlaying=${isPlaying}, sound=${sound != null} : playAsync()`);
+      // sound.playAsync();
     }
 
-    if (didJustFinish) {
-      console.log(
-        `Dialog : cbSound() : sound===null(${
-          sound === null
-        }), didJustFinish = ${didJustFinish}, isLooping = ${isLooping}, loop = ${loop}`
-      );
-      if (loop <= 1) {
-        sound.setIsLoopingAsync(true).then(() => {});
-        // await sound.stopAsync();
-        // await sound.unloadAsync();
-        // setSound(null);
-      } else {
-        // await sound.playAsync();
-        console.log('call setLoop');
-        setLoop(loop - 1);
-      }
-    }
+    // if (snd) {
+    //   console.log('Dialog : cbSound() : receive snd');
+    //   setSound(snd);
+    //   snd.setIsLoopingAsync(true).then(() => {});
+    // }
+
+    // if (didJustFinish) {
+    //   console.log(
+    //     `Dialog : cbSound() : sound===null(${
+    //       sound === null
+    //     }), didJustFinish = ${didJustFinish}, isLooping = ${isLooping}, loop = ${loop}`
+    //   );
+    //   if (loop <= 1) {
+    //     sound.setIsLoopingAsync(true).then(() => {});
+    //     // await sound.stopAsync();
+    //     // await sound.unloadAsync();
+    //     // setSound(null);
+    //   } else {
+    //     // await sound.playAsync();
+    //     console.log('call setLoop');
+    //     setLoop(loop - 1);
+    //   }
+    // }
   }
 
   const onPressPrevNext = (date, add) => {
